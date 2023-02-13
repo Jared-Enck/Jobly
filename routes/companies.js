@@ -5,12 +5,13 @@
 const jsonschema = require("jsonschema");
 const express = require("express");
 
-const { BadRequestError } = require("../expressError");
+const { BadRequestError, NotFoundError } = require("../expressError");
 const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const db = require("../db");
 
 const router = new express.Router();
 
@@ -52,6 +53,20 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
+    const qLength = Object.keys(req.query).length
+
+    if (qLength) {
+      if (req.query.name && qLength === 1) {
+        const compsByName = await Company.findAllByName(req.query.name);
+        if (!compsByName.length) {
+          throw new NotFoundError(`Can't find company with '${req.query.name}' in their name.`)
+        }
+        return res.json({ companies: { byName: compsByName} })
+      } else {
+        const compsByNumEmps = await Company.findAllByNumEmps(req.query)
+        return res.json({ companies: { byNumEmps: compsByNumEmps } })
+      }
+    }
     const companies = await Company.findAll();
     return res.json({ companies });
   } catch (err) {

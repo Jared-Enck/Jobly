@@ -51,14 +51,87 @@ class Company {
 
   static async findAll() {
     const companiesRes = await db.query(
-          `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
+      `SELECT handle,
+              name,
+              description,
+              num_employees AS "numEmployees",
+              logo_url AS "logoUrl"
+        FROM companies
+        ORDER BY name`);
     return companiesRes.rows;
+  }
+
+  /** Find all companies with like name case-insensitive. 
+   * 
+   * Returns [{ handle, name, description, logoUrl }, ...]
+   * */
+
+  static async findAllByName(name) {
+    const companiesNameRes = await db.query(
+      `SELECT c.handle,
+              c.name,
+              c.description,
+              c.logo_url AS "logoUrl"
+        FROM companies as c
+        WHERE c.name iLIKE '%${name}%'
+        ORDER BY name`
+    );
+    return companiesNameRes.rows;
+  }
+
+  /** Find all companies that meet min/max num employees. 
+   * 
+   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   * */
+
+  static async findAllByNumEmps(qParams) {
+    const minEmps = qParams.minEmps
+    const maxEmps = qParams.maxEmps
+
+    if (minEmps > maxEmps) {
+      throw new BadRequestError('Minimum employees cannot be greater than maximum employess.')
+    }
+
+    if (minEmps && maxEmps) {
+      const compsByMinMax = await db.query(
+        `SELECT c.handle,
+                c.name,
+                c.description,
+                c.num_employees AS "numEmployees",
+                c.logo_url AS "logoUrl"
+          FROM companies as c
+          WHERE c.num_employees >= ${minEmps} AND c.num_employees <= ${maxEmps}
+          ORDER BY c.num_employees DESC`
+      );
+      return compsByMinMax.rows;
+    }
+    if (minEmps && !maxEmps) {
+      const compsByMinEmps = await db.query(
+        `SELECT c.handle,
+                c.name,
+                c.description,
+                c.num_employees AS "numEmployees",
+                c.logo_url AS "logoUrl"
+          FROM companies as c
+          WHERE c.num_employees >= ${minEmps}
+          ORDER BY c.num_employees`
+      );
+      return compsByMinEmps.rows;
+    }
+    if (!minEmps && maxEmps) {
+      const compsByMaxEmps = await db.query(
+        `SELECT c.handle,
+                c.name,
+                c.description,
+                c.num_employees AS "numEmployees",
+                c.logo_url AS "logoUrl"
+          FROM companies as c
+          WHERE c.num_employees <= ${maxEmps}
+          ORDER BY c.num_employees DESC`
+      );
+      return compsByMaxEmps.rows;
+    }
+    
   }
 
   /** Given a company handle, return data about company.
