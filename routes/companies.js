@@ -63,20 +63,17 @@ router.get("/", async function (req, res, next) {
     }
 
     if (qKeys.length) {
-      if (q.name === '') {
-        throw new BadRequestError('Please enter a company name.')
-      }
       if (q.name && qKeys.length === 1) {
+        if (q.name === '') {
+          throw new BadRequestError('Please enter a company name.')
+        }
         const compsByName = await Company.findAllByName(q.name);
 
         return res.json({ companies: { byName: compsByName} })
       } else {
-        if (q.minEmps === '' || q.maxEmps === '') {
-          throw new BadRequestError('Minimum/maximum values must contain a number.')
-        }
-        const compsByAnyFilter = await Company.findAllByAnyFilter(q)
+        const compsByNumEmps = await Company.findAllByNumEmps(q)
 
-        return res.json({ companies: { byAnyFilter: compsByAnyFilter } })
+        return res.json({ companies: { byNumEmps: compsByNumEmps } })
       }
     }
     const companies = await Company.findAll();

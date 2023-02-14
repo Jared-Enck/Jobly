@@ -87,17 +87,12 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAllByAnyFilter(qParams) {
-    const name = qParams.name
+  static async findAllByNumEmps(qParams) {
     const minEmps = Number(qParams.minEmps)
     const maxEmps = Number(qParams.maxEmps)
 
     if (minEmps > maxEmps) {
       throw new BadRequestError('Minimum employees cannot be greater than maximum employess.')
-    }
-    
-    if (name) {
-
     }
 
     if (minEmps && maxEmps) {

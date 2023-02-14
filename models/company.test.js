@@ -87,6 +87,99 @@ describe("findAll", function () {
   });
 });
 
+describe("findAllByName", function () {
+  test("works: find all by like name, case-insensitive", async () => {
+    let companiesByName = await Company.findAllByName('c')
+    expect(companiesByName).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        logoUrl: "http://c3.img",
+      },
+    ]);
+  })
+  test("error: if like name not found", async () => {
+    try {
+      await Company.findAllByName('net')
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  })
+});
+
+describe("findAllByNumEmps", function () {
+  test("works: find all by num of employess min", async () => {
+    const params = {
+      minEmps: 2,
+    }
+    let companiesByNumEmps = await Company.findAllByNumEmps(params)
+    expect(companiesByNumEmps).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      },
+    ]);
+  })
+  test("works: find all by num of employess max DESC", async () => {
+    const params = {
+      maxEmps: 2,
+    }
+    let companiesByNumEmps = await Company.findAllByNumEmps(params)
+    expect(companiesByNumEmps).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+    ]);
+  })
+  test("error: if min is greater than max", async () => {
+    const params = {
+      minEmps: 3,
+      maxEmps: 2,
+    }
+    try {
+      await Company.findAllByNumEmps(params)
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  })
+});
+
 /************************************** get */
 
 describe("get", function () {
