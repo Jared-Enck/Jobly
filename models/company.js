@@ -76,6 +76,9 @@ class Company {
         WHERE c.name iLIKE '%${name}%'
         ORDER BY name`
     );
+    if (companiesNameRes.rows.length === 0) {
+      throw new NotFoundError(`Can't find company with '${name}' in their name.`)
+    }
     return companiesNameRes.rows;
   }
 
@@ -84,12 +87,17 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAllByNumEmps(qParams) {
-    const minEmps = qParams.minEmps
-    const maxEmps = qParams.maxEmps
+  static async findAllByAnyFilter(qParams) {
+    const name = qParams.name
+    const minEmps = Number(qParams.minEmps)
+    const maxEmps = Number(qParams.maxEmps)
 
     if (minEmps > maxEmps) {
       throw new BadRequestError('Minimum employees cannot be greater than maximum employess.')
+    }
+    
+    if (name) {
+
     }
 
     if (minEmps && maxEmps) {

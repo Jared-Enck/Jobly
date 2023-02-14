@@ -5,9 +5,10 @@
 const jsonschema = require("jsonschema");
 const express = require("express");
 
-const { BadRequestError, NotFoundError } = require("../expressError");
+const { BadRequestError } = require("../expressError");
 const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
+const {qParamsValidator} = require('../helpers/queryStr')
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
@@ -53,21 +54,33 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const qLength = Object.keys(req.query).length
+    const q = req.query
+    const qKeys = Object.keys(q)
+    const paramsValid = qParamsValidator(qKeys)
 
-    if (qLength) {
-      if (req.query.name && qLength === 1) {
-        const compsByName = await Company.findAllByName(req.query.name);
-        if (!compsByName.length) {
-          throw new NotFoundError(`Can't find company with '${req.query.name}' in their name.`)
-        }
+    if (!paramsValid) {
+      throw new BadRequestError('Acceptable query parameters are: name, minEmps, maxEmps')
+    }
+
+    if (qKeys.length) {
+      if (q.name === '') {
+        throw new BadRequestError('Please enter a company name.')
+      }
+      if (q.name && qKeys.length === 1) {
+        const compsByName = await Company.findAllByName(q.name);
+
         return res.json({ companies: { byName: compsByName} })
       } else {
-        const compsByNumEmps = await Company.findAllByNumEmps(req.query)
-        return res.json({ companies: { byNumEmps: compsByNumEmps } })
+        if (q.minEmps === '' || q.maxEmps === '') {
+          throw new BadRequestError('Minimum/maximum values must contain a number.')
+        }
+        const compsByAnyFilter = await Company.findAllByAnyFilter(q)
+
+        return res.json({ companies: { byAnyFilter: compsByAnyFilter } })
       }
     }
     const companies = await Company.findAll();
+
     return res.json({ companies });
   } catch (err) {
     return next(err);
