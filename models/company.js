@@ -67,6 +67,9 @@ class Company {
    * */
 
   static async findAllByName(name) {
+    if (name === '') {
+      throw new BadRequestError('Please enter a company name.')
+    }
     const companiesNameRes = await db.query(
       `SELECT c.handle,
               c.name,
