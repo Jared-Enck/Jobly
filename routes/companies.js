@@ -8,7 +8,7 @@ const express = require("express");
 const { BadRequestError } = require("../expressError");
 const { ensureLoggedIn, ensureAdmin } = require("../middleware/auth");
 const Company = require("../models/company");
-const {qParamsValidator, acceptableParams} = require('../helpers/queryStr')
+const {qParamsValidator} = require('../helpers/queryStr')
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
@@ -54,12 +54,7 @@ router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
 router.get("/", async function (req, res, next) {
   try {
     const qKeys = Object.keys(req.query)
-    const paramsValid = qParamsValidator(qKeys)
-    const paramsArr = Array.from(acceptableParams).join(', ')
-
-    if (!paramsValid) {
-      throw new BadRequestError(`Acceptable query parameters are: ${paramsArr}`)
-    }
+    qParamsValidator(qKeys)
 
     if (qKeys.length) {
       if (req.query.name) {

@@ -1,12 +1,15 @@
 // Ensures query parameters for /companies route are acceptable.
-
-const acceptableParams = new Set(['name','minEmps','maxEmps'])
+const { BadRequestError } = require("../expressError");
 
 qParamsValidator = (params) => {
+    const acceptableParams = new Set(['name','minEmps','maxEmps'])
+    const paramsArr = Array.from(acceptableParams).join(', ')
+
     for (p in params) {
-        if (!acceptableParams.has(params[p])) return false
+        if (!acceptableParams.has(params[p])) {
+            throw new BadRequestError(`Acceptable query parameters are: ${paramsArr}`)
+        }
     }
-    return true
 }
 
-module.exports = {qParamsValidator, acceptableParams}
+module.exports = {qParamsValidator}
