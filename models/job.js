@@ -56,6 +56,32 @@ class Job {
     return jobsRes.rows;
   }
 
+  /** Find all jobs by filters.
+ *
+ * Returns [{ title, salary, equity, companyHandle }, ...]
+ * */
+
+  static async findAllByFilters(params) {
+    const vals = Object.values(params)
+    const keys = Object.keys(params)
+
+    const whereParams = keys.map((name, idx) => `${name} ILIKE '%${vals.map(v => v)}%'`).join(' AND ')
+
+    console.log(whereParams)
+    console.log(vals)
+
+    const qString = `SELECT title,
+                          salary,
+                          equity,
+                          company_handle AS "companyHandle"
+                      FROM jobs
+                      WHERE ${whereParams}
+                      ORDER BY title`
+    console.log(qString)
+    const res = await db.query(qString, [...vals]);
+    return res.rows;
+  }
+
   /** Given a job id, return data about job.
    *
    * Returns { id, title, salary, equity, companyHandle, company }

@@ -53,8 +53,9 @@ router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
+    const route = 'comps'
     const qKeys = Object.keys(req.query)
-    qParamsValidator(qKeys)
+    qParamsValidator(qKeys, route)
 
     if (qKeys.length) {
       if (req.query.name) {
