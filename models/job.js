@@ -1,6 +1,7 @@
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
 const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForJobFilters } = require("../helpers/sqlFilter");
 
 /** Related functions for jobs. */
 
@@ -62,23 +63,23 @@ class Job {
  * */
 
   static async findAllByFilters(params) {
-    const vals = Object.values(params)
-    const keys = Object.keys(params)
+    const whereParams = sqlForJobFilters(params, {
+      minSalary: "salary",
+      hasEquity: "equity"
+    })
 
-    const whereParams = keys.map((name, idx) => `${name} ILIKE '%${vals.map(v => v)}%'`).join(' AND ')
-
-    console.log(whereParams)
-    console.log(vals)
-
-    const qString = `SELECT title,
+    let qString = `SELECT title,
                           salary,
                           equity,
                           company_handle AS "companyHandle"
                       FROM jobs
                       WHERE ${whereParams}
                       ORDER BY title`
-    console.log(qString)
-    const res = await db.query(qString, [...vals]);
+
+    if (Object.keys(params).includes('minSalary')) {
+      qString = qString.replace('BY title','BY salary')
+    }
+    const res = await db.query(qString);
     return res.rows;
   }
 
