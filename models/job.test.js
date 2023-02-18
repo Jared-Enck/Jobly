@@ -87,6 +87,63 @@ describe("findAll", function () {
   });
 });
 
+describe("findAllByFilters", function () {
+  test("works", async function () {
+    const params = {
+      title: 'j',
+      minSalary: 80000
+    }
+    let jobs = await Job.findAllByFilters(params);
+    expect(jobs).toEqual([
+      {
+        title: "j2",
+        salary: 80000,
+        equity: "0.5",
+        companyHandle: "c2"
+      },
+      {
+        title: "j3",
+        salary: 100000,
+        equity: "1",
+        companyHandle: "c3"
+      },
+    ]);
+  });
+
+  test("works", async function () {
+    const params = {
+      hasEquity: true
+    }
+    let jobs = await Job.findAllByFilters(params);
+    expect(jobs).toEqual([
+      {
+        title: "j2",
+        salary: 80000,
+        equity: "0.5",
+        companyHandle: "c2"
+      },
+      {
+        title: "j3",
+        salary: 100000,
+        equity: "1",
+        companyHandle: "c3"
+      },
+    ]);
+  });
+
+  test("404 if no results", async function () {
+    const params = {
+      title: 'nope'
+    }
+    try {
+      await Job.findAllByFilters(params);
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+});
+
 /************************************** get */
 
 describe("get", function () {

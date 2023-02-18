@@ -80,6 +80,13 @@ class Job {
       qString = qString.replace('BY title','BY salary')
     }
     const res = await db.query(qString);
+
+    if (!res.rows.length) {
+      const keysArr = Array.from(Object.keys(params)).join(', ')
+      const valsArr = Array.from(Object.values(params)).join(', ')
+
+      throw new NotFoundError(`Could not find results for ${keysArr} with values of ${valsArr}.`)
+    }
     return res.rows;
   }
 
