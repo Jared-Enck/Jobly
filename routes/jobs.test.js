@@ -107,7 +107,7 @@ describe("GET /jobs", function () {
             title: "j2",
             salary: 80000,
             equity: "0.5",
-            companyHandle: "c2"
+            companyHandle: "c1"
           },
           {
             title: "j3",
