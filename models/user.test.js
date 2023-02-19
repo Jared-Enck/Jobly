@@ -228,3 +228,17 @@ describe("remove", function () {
     }
   });
 });
+
+/************************************** apply */
+
+describe("apply", function () {
+  test("works", async function () {
+    await User.apply("u1",1);
+
+    const res = await db.query(
+      `SELECT username, job_id AS "jobID" FROM applications WHERE username='u1'`);
+    expect(res.rows.length).toEqual(1);
+    expect(res.rows[0].username).toEqual('u1');
+    expect(res.rows[0].jobID).toEqual(1);
+  });
+});

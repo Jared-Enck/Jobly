@@ -12,7 +12,8 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
-  adminToken
+  adminToken,
+  testJobIDs
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -348,5 +349,35 @@ describe("DELETE /users/:username", function () {
         .delete(`/users/nope`)
         .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
+  });
+});
+
+/********************************* POST /users/:username/jobs/:id*/
+
+describe("POST /users/:username/jobs/:id", function () {
+  test("works for owner user", async function () {
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${testJobIDs[0]}`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      applied: testJobIDs[0]
+    });
+  });
+
+  test("works for admin users", async function () {
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${testJobIDs[0]}`)
+      .set("authorization", `Bearer ${adminToken}`);
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      applied: testJobIDs[0]
+    });
+  });
+
+  test("unauth for anon", async function () {
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${testJobIDs[0]}`)
+    expect(resp.statusCode).toEqual(401);
   });
 });
