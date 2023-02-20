@@ -83,6 +83,15 @@ async function commonBeforeAll() {
     equity: 1,
     companyHandle: "c3"
   })).id
+  testJobIDs[3] = (await Job.create({
+    title: "j4",
+    salary: 120000,
+    equity: 0.8,
+    companyHandle: "c3"
+  })).id
+  await User.apply("u1",testJobIDs[0])
+  await User.apply("u1",testJobIDs[2])
+  await User.apply("u2",testJobIDs[1])
 }
 
 async function commonBeforeEach() {
@@ -99,6 +108,7 @@ async function commonAfterAll() {
 
 
 const u1Token = createToken({ username: "u1", isAdmin: false });
+const u3Token = createToken({ username: "u3", isAdmin: false });
 const adminToken = createToken({ username: "u2", isAdmin: true });
 
 
@@ -108,6 +118,7 @@ module.exports = {
   commonAfterEach,
   commonAfterAll,
   u1Token,
+  u3Token,
   adminToken,
   testJobIDs
 };

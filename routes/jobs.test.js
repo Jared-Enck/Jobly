@@ -115,6 +115,12 @@ describe("GET /jobs", function () {
             equity: "1",
             companyHandle: "c3"
           },
+          {
+            title: "j4",
+            salary: 120000,
+            equity: "0.8",
+            companyHandle: "c3"
+          },
         ],
     });
   });

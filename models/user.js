@@ -24,15 +24,15 @@ class User {
   static async authenticate(username, password) {
     // try to find the user first
     const result = await db.query(
-          `SELECT username,
-                  password,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
-           WHERE username = $1`,
-        [username],
+      `SELECT username,
+              password,
+              first_name AS "firstName",
+              last_name AS "lastName",
+              email,
+              is_admin AS "isAdmin"
+        FROM users
+        WHERE username = $1`,
+      [username],
     );
 
     const user = result.rows[0];
@@ -72,23 +72,23 @@ class User {
     const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
 
     const result = await db.query(
-          `INSERT INTO users
-           (username,
-            password,
-            first_name,
-            last_name,
-            email,
-            is_admin)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           RETURNING username, first_name AS "firstName", last_name AS "lastName", email, is_admin AS "isAdmin"`,
-        [
-          username,
-          hashedPassword,
-          firstName,
-          lastName,
-          email,
-          isAdmin,
-        ],
+      `INSERT INTO users
+        (username,
+        password,
+        first_name,
+        last_name,
+        email,
+        is_admin)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING username, first_name AS "firstName", last_name AS "lastName", email, is_admin AS "isAdmin"`,
+      [
+        username,
+        hashedPassword,
+        firstName,
+        lastName,
+        email,
+        isAdmin,
+      ],
     );
 
     const user = result.rows[0];
@@ -98,21 +98,21 @@ class User {
 
   /** Find all users.
    *
-   * Returns [{ username, first_name, last_name, email, is_admin }, ...]
+   * Returns [{ username, first_name, last_name, email, is_admin, jobs: [] }, ...]
    **/
 
   static async findAll() {
-    const result = await db.query(
-          `SELECT username,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
-           ORDER BY username`,
+    const results = await db.query(`
+      SELECT 
+        username,
+        first_name AS "firstName",
+        last_name AS "lastName",
+        email,
+        is_admin AS "isAdmin"
+      FROM users
+      ORDER BY username`,
     );
-
-    return result.rows;
+    return results.rows
   }
 
   /** Given a username, return data about user.
@@ -125,20 +125,44 @@ class User {
 
   static async get(username) {
     const userRes = await db.query(
-          `SELECT username,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
-           WHERE username = $1`,
-        [username],
+      `SELECT 
+          u.username,
+          u.first_name AS "firstName",
+          u.last_name AS "lastName",
+          u.email,
+          u.is_admin AS "isAdmin",
+          a.job_id AS "jobID"
+      FROM users u
+        LEFT JOIN applications a
+          ON a.username = u.username
+      WHERE u.username = $1`,
+      [username],
     );
 
-    const user = userRes.rows[0];
+    if (!userRes.rows[0]) throw new NotFoundError(`No user: ${username}`);
 
-    if (!user) throw new NotFoundError(`No user: ${username}`);
+    const {firstName,lastName,email,isAdmin} = userRes.rows[0];
 
+    const jobs = (userRes.rows[0].jobID) ? 
+      userRes.rows.map(r => r.jobID) :
+      false;
+
+    const user = (jobs) ? 
+      {
+        username,
+        firstName,
+        lastName,
+        email,
+        isAdmin,
+        jobs
+      } :
+      {
+        username,
+        firstName,
+        lastName,
+        email,
+        isAdmin
+      }
     return user;
   }
 
@@ -194,11 +218,11 @@ class User {
 
   static async remove(username) {
     let result = await db.query(
-          `DELETE
-           FROM users
-           WHERE username = $1
-           RETURNING username`,
-        [username],
+      `DELETE
+        FROM users
+        WHERE username = $1
+        RETURNING username`,
+      [username],
     );
     const user = result.rows[0];
 

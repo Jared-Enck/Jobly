@@ -116,15 +116,22 @@ describe("findAll", function () {
         firstName: "U1F",
         lastName: "U1L",
         email: "u1@email.com",
-        isAdmin: false,
+        isAdmin: false
       },
       {
         username: "u2",
         firstName: "U2F",
         lastName: "U2L",
         email: "u2@email.com",
-        isAdmin: false,
+        isAdmin: false
       },
+      {
+        username: "u3",
+        firstName: "U3F",
+        lastName: "U3L",
+        email: "u3@email.com",
+        isAdmin: false
+      }
     ]);
   });
 });
@@ -140,6 +147,18 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobs: [1,3]
+    });
+  });
+
+  test("works if no jobs for user", async function () {
+    let user = await User.get("u3");
+    expect(user).toEqual({
+      username: "u3",
+      firstName: "U3F",
+      lastName: "U3L",
+      email: "u3@email.com",
+      isAdmin: false
     });
   });
 
@@ -233,12 +252,12 @@ describe("remove", function () {
 
 describe("apply", function () {
   test("works", async function () {
-    await User.apply("u1",1);
+    await User.apply("u1",2);
 
     const res = await db.query(
-      `SELECT username, job_id AS "jobID" FROM applications WHERE username='u1'`);
+      `SELECT username, job_id AS "jobID" FROM applications WHERE username='u1' AND job_id=2`);
     expect(res.rows.length).toEqual(1);
     expect(res.rows[0].username).toEqual('u1');
-    expect(res.rows[0].jobID).toEqual(1);
+    expect(res.rows[0].jobID).toEqual(2);
   });
 });
